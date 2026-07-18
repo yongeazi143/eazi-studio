@@ -74,7 +74,7 @@ export async function GET() {
       release = await db.extensionRelease.create({
         data: {
           version,
-          zipData: zipBuffer,
+          zipData: new Uint8Array(zipBuffer),
         },
       });
       console.log("First release saved to database. ID:", release.id);
@@ -124,7 +124,7 @@ export async function POST() {
     const release = await db.extensionRelease.create({
       data: {
         version,
-        zipData: zipBuffer,
+        zipData: new Uint8Array(zipBuffer),
       },
     });
 
