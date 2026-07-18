@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  image     String?
+  projects  Project[]
+  createdAt DateTime  @default(now())
+}
+
+model NichePreset {
+  id                 String    @id @default(cuid())
+  userId             String
+  name               String
+  niche              String?
+  videoStyle         String
+  characterModifier  String
+  backgroundModifier String
+  textOverlayEnabled Boolean   @default(false)
+  extraModifiers     String[]  @default([])
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  projects           Project[]
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  title           String
+  status          ProjectStatus @default(IDEA)
+  niche           String?
+  brief           String?
+  nichePresetId   String?
+  nichePreset     NichePreset?  @relation(fields: [nichePresetId], references: [id], onDelete: SetNull)
+  presetOverrides Json?
+  script          Script?
+  audio           Audio?
+  scenes          Scene[]
+  metadata        VideoMetadata?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+enum ProjectStatus {
+  IDEA
+  TITLE
+  SCRIPT
+  AUDIO
+  TRANSCRIPT
+  PROMPTS
+  FLOW_PENDING
+  FLOW_COMPLETE
+  ASSETS_READY
+  EDITING
+  METADATA
+  THUMBNAIL
+  DONE
+}
+
+model Script {
+  id        String   @id @default(cuid())
+  projectId String   @unique
+  project   Project  @relation(fields: [projectId], references: [id])
+  content   String   // full script text
+  version   Int      @default(1)
+  updatedAt DateTime @updatedAt
+}
+
+model Audio {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  project      Project  @relation(fields: [projectId], references: [id])
+  audioUrl     String   // S3/R2 URL
+  durationSecs Float
+  transcript   Json     // word-level timestamps array
+  createdAt    DateTime @default(now())
+}
+
+model Scene {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  index        Int
+  startTime    Float
+  endTime      Float
+  narration    String
+  imagePrompt  String
+  imageUrl     String?  // filled after Flow completes
+  createdAt    DateTime @default(now())
+}
+
+model VideoMetadata {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  project      Project  @relation(fields: [projectId], references: [id])
+  title        String
+  description  String
+  tags         String[]
+  thumbnailUrl String?
+  createdAt    DateTime @default(now())
+}
+
+model ExtensionRelease {
+  id        String   @id @default(cuid())
+  version   String   @default("1.0.0")
+  zipData   Bytes    // binary data of the zip file
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,985 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "source": "4 screenshots — AI video generation web app + mobile onboarding + thumbnail tool",
+    "designPersonality": "Modern AI-product aesthetic. Two distinct modes: light-lavender (web wizard flow), dark-space (marketing/landing), warm-dark (mobile onboarding). All share: rounded corners, glassmorphism cards, gradient accents, soft ambient glows.",
+    "doNotRules": [
+      "DO NOT apply card background gradients to icon fills — icons use solid white or brand color, not the card gradient",
+      "DO NOT apply button gradient to text inside the button — button text is always solid #FFFFFF",
+      "DO NOT apply the page background gradient to card surfaces — cards have their own lighter or frosted surface",
+      "DO NOT use primary purple gradient on secondary/ghost buttons — secondary buttons use transparent or low-opacity fills",
+      "DO NOT add hard drop shadows to text elements — shadows belong on card containers and modals only",
+      "DO NOT apply border-radius: 9999px to card containers — pill radius is reserved for tags, badges, and small chips only",
+      "DO NOT reuse the dark landing page background (#0D0B1E) inside the light wizard flow — each context has its own base color",
+      "DO NOT apply ambient glow effects to inline text or body copy — glows are reserved for hero headlines and CTA buttons",
+      "DO NOT mix gradient directions: hero glows use radial, button fills use linear (135deg or 90deg)",
+      "DO NOT place borders on frosted-glass cards that already have a backdrop-blur — they use a single subtle rgba border, not a solid color border"
+    ]
+  },
+
+  "colorPalette": {
+    "brand": {
+      "primaryPurple": "#E00C1D",
+      "primaryPurpleLight": "#ff6a3d",
+      "primaryPurpleDark": "#b0060f",
+      "accentViolet": "#e50914",
+      "accentPink": "#EC4899",
+      "accentOrange": "#F97316",
+      "accentOrangeWarm": "#FB923C",
+      "accentGold": "#F59E0B"
+    },
+    "backgrounds": {
+      "lightLavender": "#FCE8E6",
+      "lightLavenderMid": "#F9D5D2",
+      "darkSpace": "#0F0F10",
+      "darkSpaceMid": "#161618",
+      "darkSpaceCard": "#1E1E22",
+      "darkSpaceCardAlt": "#25252A",
+      "warmDark": "#0F0F0F",
+      "warmDarkCard": "#1A1A1A",
+      "warmDarkCardAlt": "#242424",
+      "white": "#FFFFFF",
+      "offWhite": "#FDFBFB",
+      "surfaceLight": "#FFFFFF",
+      "surfaceLightAlpha": "rgba(255,255,255,0.85)"
+    },
+    "text": {
+      "primaryOnLight": "#1A1A2E",
+      "secondaryOnLight": "#6B7280",
+      "tertiaryOnLight": "#9CA3AF",
+      "primaryOnDark": "#FFFFFF",
+      "secondaryOnDark": "#E5E5E7",
+      "tertiaryOnDark": "#8E8E93",
+      "accentHighlight": "#E00C1D",
+      "warningText": "#F59E0B",
+      "successText": "#10B981"
+    },
+    "borders": {
+      "lightCard": "rgba(255,255,255,0.6)",
+      "lightCardSubtle": "rgba(220,195,195,0.4)",
+      "darkCard": "rgba(255,255,255,0.08)",
+      "darkCardHover": "rgba(255,255,255,0.15)",
+      "darkCardAccent": "rgba(224,12,29,0.3)",
+      "inputBorder": "rgba(156,163,175,0.3)",
+      "inputBorderFocus": "rgba(224,12,29,0.6)",
+      "divider": "rgba(156,163,175,0.15)"
+    },
+    "gradients": {
+      "primaryButton": "linear-gradient(135deg, #E00C1D 0%, #ff6a3d 100%)",
+      "primaryButtonHover": "linear-gradient(135deg, #b0060f 0%, #e50914 100%)",
+      "orangeCTA": "linear-gradient(135deg, #F97316 0%, #FB923C 100%)",
+      "orangeCTAHover": "linear-gradient(135deg, #EA6E0E 0%, #F08830 100%)",
+      "heroGlowLeft": "radial-gradient(ellipse at 20% 50%, rgba(224,12,29,0.4) 0%, transparent 60%)",
+      "heroGlowRight": "radial-gradient(ellipse at 80% 50%, rgba(236,72,153,0.3) 0%, transparent 60%)",
+      "pageBackgroundLight": "linear-gradient(160deg, #FCE8E6 0%, #F9D5D2 50%, #FCE8E6 100%)",
+      "pageBackgroundDark": "radial-gradient(ellipse at 30% 20%, #400A0F 0%, #0F0F10 50%, #200407 100%)",
+      "cardGlassDark": "linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)",
+      "cardGlassLight": "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)",
+      "thumbnailCardGradient": "linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)",
+      "selectedItemGlow": "linear-gradient(90deg, rgba(224,12,29,0.2) 0%, transparent 100%)",
+      "stepperActive": "linear-gradient(90deg, #E00C1D 0%, #ff6a3d 100%)",
+      "chipSelected": "linear-gradient(135deg, #E00C1D 0%, #e50914 100%)"
+    },
+    "shadows": {
+      "cardLight": "0 8px 32px rgba(180,100,100,0.12), 0 2px 8px rgba(180,100,100,0.06)",
+      "cardDark": "0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)",
+      "cardHoverLight": "0 16px 48px rgba(180,100,100,0.18), 0 4px 12px rgba(180,100,100,0.08)",
+      "cardHoverDark": "0 16px 48px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.3)",
+      "buttonPrimary": "0 4px 24px rgba(224,12,29,0.45)",
+      "buttonPrimaryHover": "0 6px 32px rgba(224,12,29,0.65)",
+      "buttonOrange": "0 4px 24px rgba(249,115,22,0.4)",
+      "buttonOrangeHover": "0 6px 32px rgba(249,115,22,0.6)",
+      "modalOverlay": "0 24px 80px rgba(0,0,0,0.5)",
+      "avatarGlow": "0 0 24px rgba(224,12,29,0.5)",
+      "tagChip": "0 2px 8px rgba(0,0,0,0.08)",
+      "inputFocus": "0 0 0 3px rgba(224,12,29,0.2)"
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "primary": "'Inter', 'SF Pro Display', -apple-system, sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', monospace"
+    },
+    "scale": {
+      "heroXL": {
+        "fontSize": "52px",
+        "fontWeight": 800,
+        "lineHeight": "1.1",
+        "letterSpacing": "-0.02em",
+        "color": "#FFFFFF",
+        "context": "Landing page hero headline on dark background"
+      },
+      "heroLG": {
+        "fontSize": "40px",
+        "fontWeight": 700,
+        "lineHeight": "1.2",
+        "letterSpacing": "-0.015em",
+        "color": "#FFFFFF",
+        "context": "Section headline on dark landing page"
+      },
+      "wizardTitle": {
+        "fontSize": "28px",
+        "fontWeight": 600,
+        "lineHeight": "1.3",
+        "letterSpacing": "-0.01em",
+        "color": "#1A1A2E",
+        "context": "Wizard/modal panel titles on light background"
+      },
+      "cardTitle": {
+        "fontSize": "16px",
+        "fontWeight": 600,
+        "lineHeight": "1.4",
+        "letterSpacing": "-0.005em",
+        "color": "#1A1A2E",
+        "context": "Card heading on light surface"
+      },
+      "cardTitleDark": {
+        "fontSize": "16px",
+        "fontWeight": 600,
+        "lineHeight": "1.4",
+        "color": "#FFFFFF",
+        "context": "Card heading on dark surface"
+      },
+      "labelMD": {
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "lineHeight": "1.5",
+        "color": "#6B7280",
+        "context": "Form labels, section sub-labels on light bg"
+      },
+      "labelSM": {
+        "fontSize": "12px",
+        "fontWeight": 500,
+        "lineHeight": "1.5",
+        "color": "#9CA3AF",
+        "context": "Secondary metadata, timestamps, counts"
+      },
+      "bodyMD": {
+        "fontSize": "15px",
+        "fontWeight": 400,
+        "lineHeight": "1.6",
+        "color": "#6B7280",
+        "context": "Body copy, descriptions on light bg"
+      },
+      "bodyDark": {
+        "fontSize": "15px",
+        "fontWeight": 400,
+        "lineHeight": "1.6",
+        "color": "#C4C0D8",
+        "context": "Body copy on dark bg"
+      },
+      "accentLabel": {
+        "fontSize": "13px",
+        "fontWeight": 600,
+        "lineHeight": "1.4",
+        "color": "#9B6FF7",
+        "context": "AI badge labels, accent pills, highlighted metadata"
+      },
+      "chipText": {
+        "fontSize": "12px",
+        "fontWeight": 500,
+        "lineHeight": "1",
+        "color": "#6B7280",
+        "context": "Default unselected chip/tag text"
+      },
+      "chipTextSelected": {
+        "fontSize": "12px",
+        "fontWeight": 600,
+        "color": "#FFFFFF",
+        "context": "Selected chip/tag text (on purple gradient bg)"
+      },
+      "heroAccentWord": {
+        "comment": "The highlighted word in hero headline — 'Videos', 'Shorts', etc.",
+        "color": "#9B6FF7",
+        "fontWeight": 800,
+        "context": "Inline accent word within white hero headline text"
+      }
+    }
+  },
+
+  "spacing": {
+    "borderRadius": {
+      "none": "0px",
+      "sm": "6px",
+      "md": "10px",
+      "lg": "16px",
+      "xl": "20px",
+      "2xl": "24px",
+      "3xl": "32px",
+      "pill": "9999px",
+      "contexts": {
+        "pageCard": "20px — outer wizard/modal panel container",
+        "innerCard": "14px — nested card within a panel",
+        "chip": "9999px — tone chip, language chip, tag badge",
+        "button": "10px — standard CTA buttons",
+        "buttonLarge": "12px — hero CTA buttons",
+        "buttonPill": "9999px — small icon-text pill buttons in nav",
+        "input": "10px — text inputs and selects",
+        "avatar": "9999px — circular avatar images",
+        "avatarContainer": "16px — square avatar card container",
+        "stepDot": "9999px — stepper indicator circles",
+        "listItem": "12px — selectable list items in onboarding",
+        "thumbnailCard": "16px",
+        "previewImage": "12px"
+      }
+    },
+    "padding": {
+      "cardOuter": "28px 32px",
+      "cardInner": "16px 20px",
+      "buttonSM": "8px 16px",
+      "buttonMD": "12px 24px",
+      "buttonLG": "16px 32px",
+      "chip": "6px 14px",
+      "input": "12px 16px",
+      "listItemPadding": "14px 16px",
+      "sectionGap": "32px",
+      "componentGap": "16px",
+      "inlineGap": "8px"
+    }
+  },
+
+  "elementStyling": {
+
+    "pageBackgrounds": {
+      "lightWizardFlow": {
+        "background": "linear-gradient(160deg, #EAE6F5 0%, #DDD8EF 50%, #E8E4F3 100%)",
+        "minHeight": "100vh",
+        "context": "Step-based wizard / generation flow pages"
+      },
+      "darkLanding": {
+        "background": "radial-gradient(ellipse at 30% 20%, #2D1B6B 0%, #0D0B1E 50%, #1A0D3A 100%)",
+        "minHeight": "100vh",
+        "context": "Marketing landing pages"
+      },
+      "darkLandingAmbientLeft": {
+        "position": "absolute",
+        "content": "''",
+        "background": "radial-gradient(ellipse at 0% 50%, rgba(139,92,246,0.35) 0%, transparent 55%)",
+        "width": "60%",
+        "height": "80%",
+        "pointerEvents": "none",
+        "context": "Left ambient glow placed as pseudo-element behind hero content"
+      },
+      "darkLandingAmbientRight": {
+        "background": "radial-gradient(ellipse at 100% 50%, rgba(236,72,153,0.25) 0%, transparent 55%)",
+        "context": "Right ambient pink glow"
+      },
+      "mobileOnboardingDark": {
+        "background": "#0F0F0F",
+        "context": "Mobile app screens — pure dark, no gradient"
+      }
+    },
+
+    "cards": {
+      "wizardPanelLight": {
+        "description": "Main wizard step container — white frosted glass on lavender page bg",
+        "background": "rgba(255,255,255,0.88)",
+        "backdropFilter": "blur(20px)",
+        "border": "1px solid rgba(255,255,255,0.7)",
+        "borderRadius": "20px",
+        "boxShadow": "0 8px 32px rgba(100,80,180,0.12), 0 2px 8px rgba(100,80,180,0.06)",
+        "padding": "28px 32px",
+        "doNot": "Do NOT apply page lavender gradient to this card surface"
+      },
+      "summaryBarLight": {
+        "description": "Bottom summary/confirmation bar within wizard",
+        "background": "rgba(255,255,255,0.75)",
+        "backdropFilter": "blur(12px)",
+        "border": "1px solid rgba(200,195,220,0.35)",
+        "borderRadius": "14px",
+        "boxShadow": "0 4px 16px rgba(100,80,180,0.08)",
+        "padding": "16px 20px"
+      },
+      "contentCardDark": {
+        "description": "Media/content cards on dark landing page",
+        "background": "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
+        "backdropFilter": "blur(16px)",
+        "border": "1px solid rgba(255,255,255,0.08)",
+        "borderRadius": "16px",
+        "boxShadow": "0 8px 32px rgba(0,0,0,0.4)",
+        "padding": "20px",
+        "hover": {
+          "border": "1px solid rgba(255,255,255,0.15)",
+          "boxShadow": "0 16px 48px rgba(0,0,0,0.5)",
+          "transform": "translateY(-2px)",
+          "transition": "all 0.25s ease"
+        },
+        "doNot": "Do NOT apply this card gradient to icon elements inside the card"
+      },
+      "personaCard": {
+        "description": "AI-suggested avatar/voice cards — sidebar cards",
+        "background": "rgba(255,255,255,0.92)",
+        "backdropFilter": "blur(20px)",
+        "border": "1px solid rgba(255,255,255,0.6)",
+        "borderRadius": "18px",
+        "boxShadow": "0 8px 32px rgba(100,80,180,0.12)",
+        "padding": "16px",
+        "avatarSection": {
+          "borderRadius": "12px",
+          "overflow": "hidden",
+          "background": "linear-gradient(135deg, #F3F0FF 0%, #EDE9FE 100%)",
+          "doNot": "Avatar image container uses light purple tint — do NOT use card gradient here"
+        },
+        "badgeAISuggested": {
+          "background": "rgba(124,58,237,0.1)",
+          "border": "1px solid rgba(124,58,237,0.2)",
+          "borderRadius": "9999px",
+          "padding": "4px 10px",
+          "textColor": "#7C3AED",
+          "fontSize": "11px",
+          "fontWeight": 600
+        }
+      },
+      "musicCardDark": {
+        "description": "Music/media preview cards with image thumbnail",
+        "background": "rgba(26,21,53,0.9)",
+        "border": "1px solid rgba(255,255,255,0.08)",
+        "borderRadius": "16px",
+        "overflow": "hidden",
+        "thumbnail": {
+          "borderRadius": "0",
+          "comment": "Thumbnail fills card top — no border radius on image itself"
+        },
+        "textSection": {
+          "padding": "12px 14px",
+          "background": "transparent"
+        }
+      },
+      "thumbnailProductCard": {
+        "description": "Screenshot 4 — MagicPics-style thumbnail tool cards",
+        "background": "#FFFFFF",
+        "border": "1px solid rgba(0,0,0,0.06)",
+        "borderRadius": "16px",
+        "boxShadow": "0 4px 24px rgba(0,0,0,0.06)",
+        "padding": "24px",
+        "hover": {
+          "boxShadow": "0 8px 40px rgba(0,0,0,0.1)",
+          "transform": "translateY(-2px)",
+          "transition": "all 0.2s ease"
+        }
+      },
+      "mobileListItem": {
+        "description": "Onboarding selectable content type rows",
+        "background": "#1A1A1A",
+        "border": "1px solid rgba(255,255,255,0.06)",
+        "borderRadius": "12px",
+        "padding": "14px 16px",
+        "selectedState": {
+          "background": "linear-gradient(90deg, rgba(249,115,22,0.15) 0%, rgba(249,115,22,0.05) 100%)",
+          "border": "1px solid rgba(249,115,22,0.4)",
+          "indicatorColor": "#F97316"
+        },
+        "thumbnailImage": {
+          "width": "44px",
+          "height": "44px",
+          "borderRadius": "8px",
+          "overflow": "hidden"
+        }
+      }
+    },
+
+    "buttons": {
+      "primaryPurple": {
+        "description": "Main CTA — purple gradient. Used in wizard flow and landing nav",
+        "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+        "color": "#FFFFFF",
+        "fontSize": "14px",
+        "fontWeight": 600,
+        "borderRadius": "10px",
+        "padding": "12px 24px",
+        "border": "none",
+        "boxShadow": "0 4px 24px rgba(124,58,237,0.45)",
+        "hover": {
+          "background": "linear-gradient(135deg, #6D28D9 0%, #8B5CF6 100%)",
+          "boxShadow": "0 6px 32px rgba(124,58,237,0.65)",
+          "transform": "translateY(-1px)",
+          "transition": "all 0.2s ease"
+        },
+        "active": {
+          "transform": "translateY(0px)",
+          "boxShadow": "0 2px 12px rgba(124,58,237,0.4)"
+        },
+        "disabled": {
+          "background": "linear-gradient(135deg, #C4B5FD 0%, #DDD6FE 100%)",
+          "boxShadow": "none",
+          "cursor": "not-allowed",
+          "opacity": 0.6
+        },
+        "doNot": "Do NOT apply this gradient to button text, icons inside, or adjacent UI elements"
+      },
+      "primaryOrange": {
+        "description": "Mobile onboarding primary CTA — warm orange",
+        "background": "linear-gradient(135deg, #F97316 0%, #FB923C 100%)",
+        "color": "#FFFFFF",
+        "fontSize": "16px",
+        "fontWeight": 700,
+        "borderRadius": "14px",
+        "padding": "16px 32px",
+        "border": "none",
+        "boxShadow": "0 4px 24px rgba(249,115,22,0.4)",
+        "hover": {
+          "background": "linear-gradient(135deg, #EA6E0E 0%, #F08830 100%)",
+          "boxShadow": "0 6px 32px rgba(249,115,22,0.6)"
+        },
+        "doNot": "This orange gradient is ONLY for mobile primary CTA — do not use on web wizard buttons"
+      },
+      "secondaryGhost": {
+        "description": "Secondary/outline button — used alongside primary",
+        "background": "transparent",
+        "color": "#6B7280",
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "borderRadius": "10px",
+        "padding": "12px 20px",
+        "border": "1px solid rgba(156,163,175,0.3)",
+        "hover": {
+          "background": "rgba(124,58,237,0.06)",
+          "border": "1px solid rgba(124,58,237,0.3)",
+          "color": "#7C3AED"
+        }
+      },
+      "googleOAuthDark": {
+        "description": "Google sign-in button on dark onboarding screen",
+        "background": "#FFFFFF",
+        "color": "#1A1A2E",
+        "fontSize": "15px",
+        "fontWeight": 600,
+        "borderRadius": "12px",
+        "padding": "14px 24px",
+        "border": "none",
+        "boxShadow": "0 2px 8px rgba(0,0,0,0.3)",
+        "iconColor": "inherit (Google brand colors on white)"
+      },
+      "emailAuthDark": {
+        "description": "Email sign-in button on dark onboarding screen",
+        "background": "#2A2A2A",
+        "color": "#FFFFFF",
+        "fontSize": "15px",
+        "fontWeight": 500,
+        "borderRadius": "12px",
+        "padding": "14px 24px",
+        "border": "1px solid rgba(255,255,255,0.1)"
+      },
+      "landingCTAHero": {
+        "description": "Hero CTA on dark landing page — 7-day trial style",
+        "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+        "color": "#FFFFFF",
+        "fontSize": "15px",
+        "fontWeight": 600,
+        "borderRadius": "9999px",
+        "padding": "14px 28px",
+        "border": "none",
+        "boxShadow": "0 4px 24px rgba(124,58,237,0.5)",
+        "arrowIcon": {
+          "color": "#FFFFFF",
+          "doNot": "Arrow icon inside button is solid white — not gradient"
+        }
+      },
+      "navPillDark": {
+        "description": "Navigation link pills on dark landing header",
+        "background": "transparent",
+        "color": "#C4C0D8",
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "borderRadius": "9999px",
+        "padding": "8px 16px",
+        "hover": {
+          "background": "rgba(255,255,255,0.06)",
+          "color": "#FFFFFF"
+        },
+        "activeState": {
+          "background": "rgba(124,58,237,0.15)",
+          "color": "#9B6FF7",
+          "border": "1px solid rgba(124,58,237,0.25)"
+        }
+      },
+      "iconPlayButton": {
+        "description": "Play button overlaid on media cards",
+        "background": "rgba(255,255,255,0.15)",
+        "backdropFilter": "blur(8px)",
+        "border": "1px solid rgba(255,255,255,0.25)",
+        "borderRadius": "9999px",
+        "width": "36px",
+        "height": "36px",
+        "iconFill": "#FFFFFF",
+        "hover": {
+          "background": "rgba(255,255,255,0.25)"
+        }
+      }
+    },
+
+    "inputs": {
+      "textInputLight": {
+        "description": "Text inputs and textareas on light wizard panels",
+        "background": "#FFFFFF",
+        "border": "1px solid rgba(156,163,175,0.3)",
+        "borderRadius": "10px",
+        "padding": "12px 16px",
+        "fontSize": "14px",
+        "color": "#1A1A2E",
+        "placeholderColor": "#9CA3AF",
+        "boxShadow": "0 1px 4px rgba(0,0,0,0.04)",
+        "focus": {
+          "border": "1px solid rgba(124,58,237,0.6)",
+          "boxShadow": "0 0 0 3px rgba(124,58,237,0.12)",
+          "outline": "none"
+        },
+        "doNot": "Do NOT apply card glass background to input — inputs use solid white"
+      },
+      "selectDropdown": {
+        "description": "Language / duration select dropdowns",
+        "background": "#FFFFFF",
+        "border": "1px solid rgba(156,163,175,0.25)",
+        "borderRadius": "10px",
+        "padding": "10px 14px",
+        "fontSize": "13px",
+        "color": "#1A1A2E",
+        "chevronColor": "#9CA3AF",
+        "focus": {
+          "border": "1px solid rgba(124,58,237,0.5)",
+          "boxShadow": "0 0 0 3px rgba(124,58,237,0.1)"
+        }
+      },
+      "searchInputDark": {
+        "description": "Search/prompt input on dark landing page generator",
+        "background": "rgba(255,255,255,0.05)",
+        "border": "1px solid rgba(255,255,255,0.1)",
+        "borderRadius": "10px",
+        "padding": "12px 16px",
+        "fontSize": "14px",
+        "color": "#FFFFFF",
+        "placeholderColor": "#7B7890",
+        "focus": {
+          "border": "1px solid rgba(139,92,246,0.5)",
+          "background": "rgba(255,255,255,0.08)"
+        }
+      }
+    },
+
+    "chips": {
+      "toneChipDefault": {
+        "description": "Unselected tone option chip",
+        "background": "rgba(255,255,255,0.7)",
+        "border": "1px solid rgba(200,195,220,0.4)",
+        "borderRadius": "9999px",
+        "padding": "8px 18px",
+        "fontSize": "13px",
+        "fontWeight": 500,
+        "color": "#6B7280",
+        "hover": {
+          "background": "rgba(124,58,237,0.06)",
+          "border": "1px solid rgba(124,58,237,0.25)",
+          "color": "#7C3AED"
+        }
+      },
+      "toneChipSelected": {
+        "description": "Active/selected tone chip — purple gradient",
+        "background": "linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%)",
+        "border": "none",
+        "borderRadius": "9999px",
+        "padding": "8px 18px",
+        "fontSize": "13px",
+        "fontWeight": 600,
+        "color": "#FFFFFF",
+        "boxShadow": "0 2px 12px rgba(124,58,237,0.35)",
+        "doNot": "Chip gradient is ONLY on the chip background — text inside remains solid white"
+      },
+      "attributeTag": {
+        "description": "Small metadata tags: 'Young', 'American', 'Calm', 'Deep' on persona cards",
+        "background": "rgba(124,58,237,0.08)",
+        "border": "1px solid rgba(124,58,237,0.15)",
+        "borderRadius": "9999px",
+        "padding": "4px 12px",
+        "fontSize": "12px",
+        "fontWeight": 500,
+        "color": "#7C3AED"
+      },
+      "categoryTag": {
+        "description": "Genre/category tags on music cards: 'Energetic', 'Electronic'",
+        "background": "rgba(255,255,255,0.08)",
+        "border": "1px solid rgba(255,255,255,0.1)",
+        "borderRadius": "9999px",
+        "padding": "3px 10px",
+        "fontSize": "11px",
+        "fontWeight": 500,
+        "color": "#C4C0D8"
+      }
+    },
+
+    "navigation": {
+      "topNavDark": {
+        "container": {
+          "background": "rgba(13,11,30,0.8)",
+          "backdropFilter": "blur(20px)",
+          "borderBottom": "1px solid rgba(255,255,255,0.06)",
+          "padding": "0 32px",
+          "height": "64px"
+        },
+        "logoContainer": {
+          "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+          "borderRadius": "8px",
+          "padding": "6px",
+          "iconColor": "#FFFFFF"
+        },
+        "navLinks": {
+          "color": "#C4C0D8",
+          "fontSize": "14px",
+          "fontWeight": 500,
+          "hover": { "color": "#FFFFFF" }
+        },
+        "ctaButton": {
+          "background": "rgba(124,58,237,0.15)",
+          "border": "1px solid rgba(124,58,237,0.35)",
+          "color": "#9B6FF7",
+          "borderRadius": "9999px",
+          "padding": "8px 20px",
+          "fontSize": "14px",
+          "fontWeight": 600,
+          "hover": {
+            "background": "rgba(124,58,237,0.25)",
+            "border": "1px solid rgba(124,58,237,0.5)"
+          }
+        }
+      },
+      "stepperLight": {
+        "description": "Multi-step wizard stepper indicator",
+        "trackBackground": "rgba(200,195,220,0.3)",
+        "trackHeight": "2px",
+        "trackBorderRadius": "9999px",
+        "stepDot": {
+          "default": {
+            "background": "rgba(200,195,220,0.5)",
+            "width": "28px",
+            "height": "28px",
+            "borderRadius": "9999px",
+            "border": "2px solid rgba(200,195,220,0.4)"
+          },
+          "active": {
+            "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+            "border": "none",
+            "boxShadow": "0 0 0 4px rgba(124,58,237,0.15)",
+            "iconColor": "#FFFFFF"
+          },
+          "completed": {
+            "background": "#7C3AED",
+            "border": "none",
+            "iconColor": "#FFFFFF"
+          }
+        },
+        "stepLabel": {
+          "default": { "color": "#9CA3AF", "fontSize": "12px", "fontWeight": 500 },
+          "active": { "color": "#7C3AED", "fontWeight": 600 },
+          "completed": { "color": "#6B7280" }
+        },
+        "progressLine": {
+          "filled": "linear-gradient(90deg, #7C3AED 0%, #9B6FF7 100%)",
+          "empty": "rgba(200,195,220,0.3)"
+        }
+      }
+    },
+
+    "icons": {
+      "navIconDark": {
+        "fill": "none",
+        "stroke": "#C4C0D8",
+        "strokeWidth": "1.5px",
+        "size": "18px",
+        "context": "Navigation bar icons on dark bg",
+        "doNot": "Do NOT give these icons a background container or fill"
+      },
+      "actionIconOnCard": {
+        "fill": "none",
+        "stroke": "#9CA3AF",
+        "strokeWidth": "1.5px",
+        "size": "16px",
+        "context": "Action icons (edit, more, play) placed on card surfaces"
+      },
+      "brandIconContainer": {
+        "containerBackground": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+        "containerBorderRadius": "8px",
+        "containerPadding": "8px",
+        "iconFill": "#FFFFFF",
+        "iconSize": "20px",
+        "context": "Logo icon and primary brand icon placements",
+        "doNot": "The gradient is on the CONTAINER, icon itself is solid white fill"
+      },
+      "aiSparkleIcon": {
+        "fill": "#F59E0B",
+        "size": "14px",
+        "context": "AI badge indicator next to AI-suggested label",
+        "doNot": "Do NOT use purple for this icon — it is gold/amber only"
+      },
+      "flagEmoji": {
+        "context": "Country flags as emoji inside persona attributes — no custom styling"
+      },
+      "checkIndicator": {
+        "container": {
+          "background": "#F97316",
+          "borderRadius": "9999px",
+          "width": "22px",
+          "height": "22px"
+        },
+        "iconFill": "#FFFFFF",
+        "iconSize": "12px",
+        "context": "Selected state indicator on mobile list items"
+      },
+      "playIconOnMedia": {
+        "containerBackground": "rgba(255,255,255,0.15)",
+        "containerBackdropFilter": "blur(8px)",
+        "containerBorderRadius": "9999px",
+        "containerSize": "36px",
+        "containerBorder": "1px solid rgba(255,255,255,0.2)",
+        "iconFill": "#FFFFFF",
+        "iconSize": "14px",
+        "doNot": "Do NOT make play button a solid purple — it is frosted glass white"
+      }
+    },
+
+    "avatars": {
+      "circularAvatarSmall": {
+        "width": "32px",
+        "height": "32px",
+        "borderRadius": "9999px",
+        "border": "2px solid rgba(255,255,255,0.8)",
+        "objectFit": "cover"
+      },
+      "personaAvatarLarge": {
+        "width": "100%",
+        "aspectRatio": "3/4",
+        "borderRadius": "12px",
+        "objectFit": "cover",
+        "containerBackground": "linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%)",
+        "context": "3D avatar images in persona selector cards"
+      },
+      "mobileOnboardingOrb": {
+        "description": "Abstract 3D sphere/orb on mobile onboarding splash",
+        "background": "radial-gradient(circle at 35% 35%, #C084FC 0%, #7C3AED 40%, #4C1D95 80%)",
+        "borderRadius": "9999px",
+        "boxShadow": "0 0 60px rgba(139,92,246,0.5)",
+        "context": "Decorative hero element — do not apply to any functional component"
+      }
+    },
+
+    "badges": {
+      "aiBadge": {
+        "background": "rgba(245,158,11,0.12)",
+        "border": "1px solid rgba(245,158,11,0.25)",
+        "borderRadius": "9999px",
+        "padding": "4px 10px",
+        "fontSize": "11px",
+        "fontWeight": 600,
+        "color": "#F59E0B",
+        "iconColor": "#F59E0B",
+        "context": "AI-suggested badges on persona cards"
+      },
+      "countBadge": {
+        "background": "rgba(124,58,237,0.12)",
+        "borderRadius": "9999px",
+        "padding": "2px 8px",
+        "fontSize": "11px",
+        "fontWeight": 600,
+        "color": "#7C3AED",
+        "context": "Usage count chips: '34.2K times used'"
+      },
+      "newBadge": {
+        "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+        "borderRadius": "9999px",
+        "padding": "3px 10px",
+        "fontSize": "10px",
+        "fontWeight": 700,
+        "color": "#FFFFFF",
+        "context": "New feature badge on cards"
+      }
+    },
+
+    "mediaElements": {
+      "videoPreviewThumbnail": {
+        "borderRadius": "12px",
+        "overflow": "hidden",
+        "objectFit": "cover",
+        "overlay": {
+          "background": "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6) 100%)",
+          "borderRadius": "12px"
+        }
+      },
+      "waveformVisualizer": {
+        "description": "Audio waveform in dark generator UI",
+        "barColor": "#7C3AED",
+        "barColorActive": "#9B6FF7",
+        "barWidth": "3px",
+        "barGap": "2px",
+        "barBorderRadius": "2px",
+        "containerBackground": "transparent"
+      },
+      "thumbnailGridItem": {
+        "description": "Generated thumbnail previews in MagicPics-style UI",
+        "borderRadius": "10px",
+        "overflow": "hidden",
+        "border": "2px solid transparent",
+        "selectedState": {
+          "border": "2px solid #7C3AED",
+          "boxShadow": "0 0 0 4px rgba(124,58,237,0.15)"
+        }
+      }
+    },
+
+    "sections": {
+      "featureSectionDark": {
+        "description": "Feature grid section on landing page",
+        "background": "transparent",
+        "headlineColor": "#FFFFFF",
+        "subheadlineColor": "#C4C0D8",
+        "featureCard": {
+          "background": "rgba(255,255,255,0.04)",
+          "border": "1px solid rgba(255,255,255,0.07)",
+          "borderRadius": "16px",
+          "padding": "24px",
+          "iconContainer": {
+            "background": "rgba(124,58,237,0.15)",
+            "borderRadius": "10px",
+            "padding": "10px",
+            "iconColor": "#9B6FF7"
+          },
+          "titleColor": "#FFFFFF",
+          "bodyColor": "#C4C0D8"
+        }
+      },
+      "testimonialCard": {
+        "background": "rgba(255,255,255,0.04)",
+        "border": "1px solid rgba(255,255,255,0.07)",
+        "borderRadius": "16px",
+        "padding": "20px 24px",
+        "quoteTextColor": "#C4C0D8",
+        "authorNameColor": "#FFFFFF",
+        "authorMetaColor": "#7B7890",
+        "starColor": "#F59E0B"
+      },
+      "heroLandingDark": {
+        "description": "Full-width hero section layout",
+        "headline": {
+          "color": "#FFFFFF",
+          "accentWordColor": "#9B6FF7",
+          "fontSize": "52px",
+          "fontWeight": 800
+        },
+        "subheadline": {
+          "color": "#C4C0D8",
+          "fontSize": "18px",
+          "fontWeight": 400,
+          "maxWidth": "560px"
+        },
+        "ctaGroup": {
+          "gap": "16px",
+          "marginTop": "40px"
+        }
+      }
+    },
+
+    "dividers": {
+      "subtle": {
+        "border": "none",
+        "borderTop": "1px solid rgba(156,163,175,0.15)",
+        "margin": "16px 0"
+      },
+      "darkSubtle": {
+        "borderTop": "1px solid rgba(255,255,255,0.06)",
+        "margin": "16px 0"
+      }
+    },
+
+    "scrollbars": {
+      "light": {
+        "thumbBackground": "rgba(124,58,237,0.2)",
+        "trackBackground": "transparent",
+        "width": "4px",
+        "borderRadius": "9999px"
+      }
+    }
+  },
+
+  "componentPatterns": {
+    "wizardGeneratorFlow": {
+      "description": "The multi-step generate flow (Screenshots 1)",
+      "pageBackground": "linear-gradient(160deg, #EAE6F5 0%, #DDD8EF 50%, #E8E4F3 100%)",
+      "mainPanel": "wizardPanelLight card",
+      "sidebarCards": "personaCard + musicCardDark",
+      "stepperType": "horizontal linear stepper",
+      "inputStyle": "textInputLight",
+      "toneSelectionStyle": "toneChip selected/default states",
+      "primaryAction": "primaryPurple button",
+      "summaryBar": "summaryBarLight card"
+    },
+    "darkLandingPage": {
+      "description": "Marketing landing page pattern (Screenshot 2)",
+      "pageBackground": "darkLanding radial gradient",
+      "ambientEffects": "darkLandingAmbientLeft + darkLandingAmbientRight",
+      "nav": "topNavDark",
+      "heroHeadline": "heroLandingDark headline",
+      "primaryCTA": "landingCTAHero button",
+      "featureCards": "contentCardDark with glass effect",
+      "inputArea": "searchInputDark"
+    },
+    "mobileOnboardingFlow": {
+      "description": "Mobile onboarding screens (Screenshot 3)",
+      "pageBackground": "#0F0F0F warmDark",
+      "splashDecoration": "mobileOnboardingOrb",
+      "headline": { "color": "#FFFFFF", "fontWeight": 700, "fontSize": "28px" },
+      "body": { "color": "#C4C0D8" },
+      "primaryAction": "primaryOrange button (full width)",
+      "authButtons": "googleOAuthDark + emailAuthDark",
+      "listSelection": "mobileListItem with orange selected state",
+      "listIndicator": "checkIndicator orange"
+    },
+    "thumbnailGeneratorTool": {
+      "description": "AI thumbnail creator tool (Screenshot 4)",
+      "pageBackground": "#FFFFFF or very light gray",
+      "cards": "thumbnailProductCard on white",
+      "accentColor": "primaryPurple gradient for highlights",
+      "stepNumber": {
+        "background": "linear-gradient(135deg, #7C3AED 0%, #9B6FF7 100%)",
+        "borderRadius": "9999px",
+        "width": "28px",
+        "height": "28px",
+        "color": "#FFFFFF",
+        "fontWeight": 700,
+        "fontSize": "14px"
+      },
+      "sectionHeadline": {
+        "color": "#1A1A2E",
+        "fontWeight": 700,
+        "fontSize": "32px"
+      },
+      "accentHighlightInHeadline": {
+        "color": "#7C3AED",
+        "fontStyle": "normal"
+      }
+    }
+  },
+
+  "animationTokens": {
+    "transitions": {
+      "default": "all 0.2s ease",
+      "smooth": "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+      "spring": "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+    },
+    "hoverLift": "translateY(-2px)",
+    "hoverLiftSm": "translateY(-1px)",
+    "activePress": "translateY(0px) scale(0.98)",
+    "glowPulse": {
+      "keyframes": "opacity 2s ease-in-out infinite alternate",
+      "from": "opacity: 0.6",
+      "to": "opacity: 1",
+      "appliedTo": "ambient background glow elements only"
+    }
+  },
+
+  "zIndexScale": {
+    "background": 0,
+    "content": 10,
+    "card": 20,
+    "stickyNav": 100,
+    "modal": 200,
+    "tooltip": 300
+  }
+}
