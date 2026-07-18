@@ -29,22 +29,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized access to project" }, { status: 403 });
     }
 
-    // Decode base64 image into binary buffer
-    const buffer = Buffer.from(base64Image, "base64");
+    // Construct base64 Data URL (e.g., data:image/png;base64,...)
+    const imageUrl = base64Image.startsWith("data:")
+      ? base64Image
+      : `data:image/png;base64,${base64Image}`;
 
-    // Save with conceptId suffix to support separate image renders per concept
-    const publicDir = path.join(process.cwd(), "public");
-    const outputFolder = path.join(publicDir, "generated-images", projectId);
-    const outputFilename = `thumbnail-${conceptId}.png`;
-    const outputPath = path.join(outputFolder, outputFilename);
-
-    // Ensure the folder exists recursively
-    fs.mkdirSync(outputFolder, { recursive: true });
-
-    // Write binary buffer to file
-    fs.writeFileSync(outputPath, buffer);
-
-    const relativeUrl = `/generated-images/${projectId}/${outputFilename}`;
+    // Optionally save locally (catch error silently on Vercel)
+    try {
+      const publicDir = path.join(process.cwd(), "public");
+      const outputFolder = path.join(publicDir, "generated-images", projectId);
+      const outputFilename = `thumbnail-${conceptId}.png`;
+      const outputPath = path.join(outputFolder, outputFilename);
+      fs.mkdirSync(outputFolder, { recursive: true });
+      const buffer = Buffer.from(base64Image.replace(/^data:image\/\w+;base64,/, ""), "base64");
+      fs.writeFileSync(outputPath, buffer);
+    } catch (fsErr) {
+      console.warn("Could not save thumbnail to local file system (expected on read-only environments like Vercel):", fsErr);
+    }
 
     // Read existing brief JSON
     let briefData: any = {};
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
     const thumbnailConcepts = briefData.thumbnailConcepts || [];
     const targetConcept = thumbnailConcepts.find((c: any) => c.id === conceptId);
     if (targetConcept) {
-      targetConcept.imageUrl = relativeUrl;
+      targetConcept.imageUrl = imageUrl;
     }
 
     // Update brief JSON
@@ -81,20 +82,20 @@ export async function POST(request: NextRequest) {
     await db.videoMetadata.upsert({
       where: { projectId },
       update: {
-        thumbnailUrl: relativeUrl,
+        thumbnailUrl: imageUrl,
       },
       create: {
         projectId,
         title: project.title,
         description: "",
         tags: [],
-        thumbnailUrl: relativeUrl,
+        thumbnailUrl: imageUrl,
       }
     });
 
     return NextResponse.json({
       success: true,
-      thumbnailUrl: relativeUrl,
+      thumbnailUrl: imageUrl,
       thumbnailConcepts
     });
 

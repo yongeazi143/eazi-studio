@@ -33,27 +33,28 @@ export async function POST(request: NextRequest) {
 
     const projectId = scene.projectId;
 
-    // 2. Decode base64 image into binary buffer
-    const buffer = Buffer.from(base64Image, "base64");
+    // 2. Construct base64 Data URL (e.g., data:image/png;base64,...)
+    const imageUrl = base64Image.startsWith("data:")
+      ? base64Image
+      : `data:image/png;base64,${base64Image}`;
 
-    // 3. Define output path in public folder: public/generated-images/[projectId]/[sceneId].png
-    const publicDir = path.join(process.cwd(), "public");
-    const outputFolder = path.join(publicDir, "generated-images", projectId);
-    const outputFilename = `${sceneId}.png`;
-    const outputPath = path.join(outputFolder, outputFilename);
-
-    // Ensure the folder exists recursively
-    fs.mkdirSync(outputFolder, { recursive: true });
-
-    // Write binary buffer to file
-    fs.writeFileSync(outputPath, buffer);
-
-    const relativeUrl = `/generated-images/${projectId}/${outputFilename}`;
+    // 3. Try to save locally in dev environment, ignoring errors on read-only filesystems (Vercel)
+    try {
+      const publicDir = path.join(process.cwd(), "public");
+      const outputFolder = path.join(publicDir, "generated-images", projectId);
+      const outputFilename = `${sceneId}.png`;
+      const outputPath = path.join(outputFolder, outputFilename);
+      fs.mkdirSync(outputFolder, { recursive: true });
+      const buffer = Buffer.from(base64Image.replace(/^data:image\/\w+;base64,/, ""), "base64");
+      fs.writeFileSync(outputPath, buffer);
+    } catch (fsErr) {
+      console.warn("Could not save image to local file system (expected on read-only environments like Vercel):", fsErr);
+    }
 
     // 4. Update the Scene image URL in DB
     const updatedScene = await db.scene.update({
       where: { id: sceneId },
-      data: { imageUrl: relativeUrl },
+      data: { imageUrl },
     });
 
     // 5. Check if all scenes in this project now have an image
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      imageUrl: relativeUrl,
+      imageUrl,
       completedCount: completedScenesCount,
       totalCount: allScenes.length,
     });
