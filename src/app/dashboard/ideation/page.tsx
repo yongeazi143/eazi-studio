@@ -44,6 +44,8 @@ function IdeationPageContent() {
   const [youtubeSearchResults, setYoutubeSearchResults] = useState<any[]>([]);
   const [isSearchingYoutube, setIsSearchingYoutube] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [expandedVideoTranscriptId, setExpandedVideoTranscriptId] = useState<string | null>(null);
+  const [tempTranscripts, setTempTranscripts] = useState<Record<string, string>>({});
 
   // AI Generation State
   const [isGenerating, setIsGenerating] = useState(false);
@@ -610,23 +612,58 @@ function IdeationPageContent() {
         const data = await res.json();
         dataResult = data.result;
       } else if (activeTab === 'remix') {
-        const urls = selectedVideos.map(v => v.url);
-        const res = await fetch('/api/youtube/transcript', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ urls }),
-          cache: 'no-store'
-        });
-        const data = await res.json();
+        const videosToFetch = selectedVideos.filter(v => !v.manualTranscript);
+        let fetchResults: any[] = [];
+
+        if (videosToFetch.length > 0) {
+          const urls = videosToFetch.map(v => v.url);
+          const res = await fetch('/api/youtube/transcript', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls }),
+            cache: 'no-store'
+          });
+          const data = await res.json();
+          fetchResults = data.results || [];
+        }
 
         const sources = selectedVideos.map(video => {
-          const transcriptItem = data.results?.find((item: any) => item.url === video.url);
+          if (video.manualTranscript) {
+            return {
+              title: video.title,
+              url: video.url,
+              transcript: video.manualTranscript
+            };
+          }
+          const transcriptItem = fetchResults.find((item: any) => item.url === video.url);
           return {
             title: video.title,
             url: video.url,
             transcript: transcriptItem?.status === 'success' ? transcriptItem.text : ""
           };
         }).filter(item => !!item.transcript);
+
+        const failedVideos = selectedVideos.filter(video => {
+          if (video.manualTranscript) return false;
+          const match = fetchResults.find((item: any) => item.url === video.url);
+          return !match || match.status !== 'success';
+        });
+
+        if (failedVideos.length > 0) {
+          const updatedVideos = selectedVideos.map(v => {
+            const match = fetchResults.find((item: any) => item.url === v.url);
+            if (!v.manualTranscript && (!match || match.status !== 'success')) {
+              return { ...v, hasError: true, fetchError: match?.error || "YouTube transcription extraction was blocked by anti-bot checks." };
+            }
+            return v;
+          });
+          setSelectedVideos(updatedVideos);
+          localStorage.setItem('eazi_selected_videos', JSON.stringify(updatedVideos));
+          
+          showToast(`YouTube blocked fetching transcripts for ${failedVideos.length} video(s). Please paste them manually in the red-bordered cards.`, "error");
+          setIsGenerating(false);
+          return;
+        }
 
         if (sources.length > 0) {
           const remixRes = await fetch('/api/ai/remix', {
@@ -1025,24 +1062,101 @@ function IdeationPageContent() {
                   </div>
 
                   {selectedVideos.length > 0 ? (
-                    <div className="flex flex-col gap-2 max-h-[190px] overflow-y-auto pr-0.5">
-                      {selectedVideos.map((video) => (
-                        <div key={video.id} className="flex gap-3 bg-black/55 border border-white/5 rounded-xl p-2 items-center justify-between group relative overflow-hidden transition-all hover:border-[#E00C1D]/30">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <img src={video.thumbnail} className="w-14 h-9 object-cover rounded bg-white/5 shrink-0 border border-white/5" alt="" />
-                            <div className="min-w-0">
-                              <h4 className="text-[11px] font-semibold text-gray-100 truncate pr-4">{video.title}</h4>
-                              <p className="text-[9px] text-gray-400 truncate">{video.channelTitle}</p>
-                            </div>
-                          </div>
-                          <button 
-                            onClick={() => handleRemoveVideo(video.id)}
-                            className="text-gray-500 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-white/5 cursor-pointer shrink-0"
+                    <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto pr-0.5">
+                      {selectedVideos.map((video) => {
+                        const isExpanded = expandedVideoTranscriptId === video.id;
+                        return (
+                          <div 
+                            key={video.id} 
+                            className={`flex flex-col gap-2 bg-black/55 border rounded-xl p-2.5 transition-all ${
+                              video.hasError 
+                                ? 'border-red-500/50 shadow-[0_0_12px_rgba(239,68,68,0.15)] bg-red-500/[0.02]' 
+                                : video.manualTranscript 
+                                  ? 'border-green-500/30' 
+                                  : 'border-white/5 hover:border-[#E00C1D]/30'
+                            }`}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex gap-3 items-center justify-between group relative overflow-hidden">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <img src={video.thumbnail} className="w-14 h-9 object-cover rounded bg-white/5 shrink-0 border border-white/5" alt="" />
+                                <div className="min-w-0 font-sans">
+                                  <h4 className="text-[11px] font-semibold text-gray-100 truncate pr-4" title={video.title}>{video.title}</h4>
+                                  <p className="text-[9px] text-gray-400 truncate">{video.channelTitle}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedVideoTranscriptId(isExpanded ? null : video.id)}
+                                  title="Add/Edit Transcript Manually"
+                                  className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                                    video.manualTranscript 
+                                      ? 'text-green-400 bg-green-500/10 hover:bg-green-500/20' 
+                                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                  }`}
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                </button>
+                                <button 
+                                  type="button"
+                                  onClick={() => handleRemoveVideo(video.id)}
+                                  className="text-gray-500 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-white/5 cursor-pointer shrink-0"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Fetch Error Flag */}
+                            {video.hasError && (
+                              <div className="text-[9px] text-red-400 font-semibold bg-red-500/10 border border-red-500/20 px-2 py-1.5 rounded-lg mt-0.5 leading-relaxed font-sans select-text">
+                                ⚠️ Eazi Studio was blocked from downloading this transcript. Please click the page icon on the right to paste it manually.
+                              </div>
+                            )}
+
+                            {/* Inline Manual Transcript Area */}
+                            {isExpanded && (
+                              <div className="flex flex-col gap-2 mt-2 border-t border-white/5 pt-2 animate-fade-in">
+                                <label className="text-[9px] font-semibold text-gray-400 font-sans">Manual Transcript Editor</label>
+                                <textarea
+                                  className="w-full bg-black/60 border border-white/10 focus:border-[#E00C1D] focus:ring-1 focus:ring-[#E00C1D]/10 rounded-lg p-2 min-h-[90px] text-[10px] text-white focus:outline-none resize-y placeholder:text-gray-655 font-mono leading-relaxed"
+                                  placeholder="Paste the YouTube transcript text here..."
+                                  value={tempTranscripts[video.id] ?? video.manualTranscript ?? ""}
+                                  onChange={(e) => setTempTranscripts(prev => ({ ...prev, [video.id]: e.target.value }))}
+                                />
+                                <div className="flex gap-2 justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const text = tempTranscripts[video.id] || "";
+                                      const updated = selectedVideos.map(v => {
+                                        if (v.id === video.id) {
+                                          return { ...v, manualTranscript: text.trim() || undefined, hasError: false, fetchError: undefined };
+                                        }
+                                        return v;
+                                      });
+                                      setSelectedVideos(updated);
+                                      localStorage.setItem('eazi_selected_videos', JSON.stringify(updated));
+                                      setExpandedVideoTranscriptId(null);
+                                      showToast("Transcript saved!", "success", 1500);
+                                    }}
+                                    className="px-2.5 py-1 bg-green-500 hover:bg-green-600 text-white font-bold rounded text-[10px] cursor-pointer"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedVideoTranscriptId(null)}
+                                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-gray-300 rounded text-[10px] cursor-pointer"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="border border-dashed border-white/5 rounded-xl p-6 text-center text-xs text-gray-500 bg-black/20">
