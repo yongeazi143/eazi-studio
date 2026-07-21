@@ -223,12 +223,12 @@ export default function ScriptPage({ params }: ScriptPageProps) {
             </div>
           </div>
 
-          <div className="relative flex-1 flex flex-col bg-white/[0.01] border border-white/5 rounded-2xl overflow-hidden focus-within:border-[#E00C1D]/30 transition-all" style={{ minHeight: 'calc(100vh - 240px)' }}>
+          <div className="relative flex-1 flex flex-col bg-white/[0.01] border border-white/5 rounded-2xl overflow-hidden focus-within:border-[#E00C1D]/30 transition-all min-h-[350px] lg:min-h-[calc(100vh-240px)]">
             <textarea
               value={scriptText}
               onChange={handleTextChange}
               placeholder="Paste or write your full retention-optimized video script here... Separate your sections using headers like [HOOK], [BRIDGE], [BODY], or [CTA] to organize narration."
-              className="w-full h-full p-6 bg-transparent border-0 outline-none text-sm text-gray-200 leading-relaxed font-sans placeholder-gray-600 resize-none focus:ring-0"
+              className="w-full flex-1 min-h-full p-6 bg-transparent border-0 outline-none text-sm text-gray-200 leading-relaxed font-sans placeholder-gray-600 resize-none focus:ring-0"
               style={{ scrollbarWidth: 'thin', scrollbarColor: '#3f3f46 transparent' }}
             />
           </div>
