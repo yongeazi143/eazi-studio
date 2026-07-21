@@ -154,7 +154,7 @@ export default function ScriptPage({ params }: ScriptPageProps) {
           <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">WORKSPACE / SCRIPT EDITOR</span>
           <h1 className="text-base font-bold tracking-tight mt-0.5">{project?.title || "Untitled Project"}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Toggle Brief Panel */}
           <button
             onClick={() => setShowBrief(!showBrief)}

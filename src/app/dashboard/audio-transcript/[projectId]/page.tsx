@@ -330,7 +330,7 @@ export default function AudioTranscriptPage({ params }: AudioTranscriptPageProps
           <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">Workspace / Voiceover & Audio</span>
           <h1 className="text-2xl font-bold tracking-tight mt-0.5">{project?.title || "Audio Workspace"}</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {(status === "idle" || status === "done") && project?.script?.content && (
             <button
               onClick={() => setIsTTSModalOpen(true)}

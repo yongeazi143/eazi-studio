@@ -73,6 +73,8 @@ function IdeationPageContent() {
   // Resizable Column State (Percentage of Left Column width)
   const [leftWidth, setLeftWidth] = useState(50); // Default to 50/50 split
   const [isDragging, setIsDragging] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Auth & API State
@@ -383,6 +385,17 @@ function IdeationPageContent() {
       }
     };
     fetchUserAndStats();
+  }, []);
+
+  // Track mount state and detect desktop viewport
+  useEffect(() => {
+    setMounted(true);
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    checkIsDesktop();
+    window.addEventListener("resize", checkIsDesktop);
+    return () => window.removeEventListener("resize", checkIsDesktop);
   }, []);
 
   // Resize Mouse Move Listeners
@@ -992,7 +1005,7 @@ function IdeationPageContent() {
 
         {/* LEFT COLUMN: Settings / Inputs */}
         <div
-          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${leftWidth}%` : '100%' }}
+          style={{ width: mounted && isDesktop ? `${leftWidth}%` : undefined }}
           className="flex flex-col p-6 border-t md:border-t-0 md:border-l border-white/5 bg-black/10"
         >
           {/* Three Selection Tabs */}
@@ -1320,7 +1333,7 @@ function IdeationPageContent() {
 
         {/* RIGHT COLUMN: Results / Empty State Placeholder */}
         <div
-          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${100 - leftWidth}%` : '100%' }}
+          style={{ width: mounted && isDesktop ? `${100 - leftWidth}%` : undefined }}
           className="flex flex-col p-6 min-h-[550px] overflow-y-auto"
         >
           {isGenerating ? (

@@ -129,7 +129,7 @@ export default function PipelineStepper({ projectId, projectStatus = "IDEA" }: P
                       )}
                     </div>
                     <span
-                      className={`text-[10px] md:text-[11px] font-semibold tracking-wide whitespace-nowrap transition-colors ${labelClass(isActive, isCompleted)} ${!isActive && !isCompleted ? "group-hover:text-gray-800 dark:group-hover:text-gray-300" : ""}`}
+                      className={`text-[10px] md:text-[11px] font-semibold tracking-wide whitespace-nowrap transition-colors hidden sm:block ${labelClass(isActive, isCompleted)} ${!isActive && !isCompleted ? "group-hover:text-gray-800 dark:group-hover:text-gray-300" : ""}`}
                     >
                       {step.label}
                     </span>
@@ -140,7 +140,7 @@ export default function PipelineStepper({ projectId, projectStatus = "IDEA" }: P
                     <div className={`${circleBase} ${circleClass(isActive, isCompleted, isLocked)}`}>
                       <step.icon className="w-4 h-4" />
                     </div>
-                    <span className={`text-[10px] md:text-[11px] font-semibold tracking-wide whitespace-nowrap ${labelClass(isActive, isCompleted, isLocked)}`}>
+                    <span className={`text-[10px] md:text-[11px] font-semibold tracking-wide whitespace-nowrap hidden sm:block ${labelClass(isActive, isCompleted, isLocked)}`}>
                       {step.label}
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export default function PipelineStepper({ projectId, projectStatus = "IDEA" }: P
 
               {/* Connector line after this step (not after the last step) */}
               {idx < STEPS.length - 1 && (
-                <div className="flex-1 mx-2 mb-5">
+                <div className="flex-1 mx-2 mb-0 sm:mb-5">
                   <div className="h-[2px] w-full bg-black/[0.06] dark:bg-white/5 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-[#E00C1D] transition-all duration-500 ease-in-out"
@@ -164,6 +164,14 @@ export default function PipelineStepper({ projectId, projectStatus = "IDEA" }: P
           return node;
         })}
       </div>
+      
+      {/* Mobile-only active step text */}
+      {activeIndex >= 0 && (
+        <div className="text-center mt-3 sm:hidden border-t border-black/5 dark:border-white/5 pt-2">
+          <span className="text-[9px] text-gray-500 font-mono font-bold uppercase tracking-wider">Active Workspace Step</span>
+          <h4 className="text-xs font-extrabold text-[#E00C1D] mt-0.5">{STEPS[activeIndex]?.label}</h4>
+        </div>
+      )}
     </div>
   );
 }

@@ -573,7 +573,7 @@ export default function ThumbnailPage({ params }: ThumbnailPageProps) {
         </div>
 
         {/* Navigation Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             href={`/dashboard/storyboard-images/${projectId}`}
             className="px-4 py-2.5 text-xs font-semibold bg-white/5 hover:bg-white/10 text-white rounded-xl transition-all border border-white/10 flex items-center gap-1.5 cursor-pointer shadow-inner"

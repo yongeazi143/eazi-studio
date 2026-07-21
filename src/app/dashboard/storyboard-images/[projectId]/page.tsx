@@ -402,7 +402,7 @@ export default function StoryboardGridPage({ params }: StoryboardGridPageProps) 
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 self-stretch md:self-auto shrink-0 justify-end">
+        <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto shrink-0 justify-end">
 
           {isExtensionConnected && (
             <>
