@@ -119,19 +119,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid project brief format in database.' }, { status: 422 });
     }
 
+    // Fetch user channel profile for personalized tone & target avatar alignment
+    const userProfile = await db.channelProfile.findUnique({
+      where: { userId: user.id },
+    }).catch(() => null);
+
     const frameworkKey = briefData.framework || 'stoic_explainer';
     const frameworkRulePrompt = FRAMEWORK_PROMPTS[frameworkKey] || FRAMEWORK_PROMPTS.stoic_explainer;
 
-    const tone = styleOverrides.tone || briefData.toneNotes || 'warm, direct, conversational (Guide, Not Guru)';
+    const personaTone = userProfile?.toneOfVoice || briefData.toneNotes || 'warm, direct, conversational (Guide, Not Guru)';
+    const targetAvatar = userProfile?.audienceAvatar || briefData.targetAudience || 'General curious viewer';
+    const contentNiche = userProfile?.niche || project.niche || 'General';
+    const tone = styleOverrides.tone || personaTone;
 
     // Parse duration from the saved brief (e.g. "8-10 mins", "5 mins", "10-15 mins")
-    // Take the upper bound of a range, or the single value, defaulting to 10
     const parseDurationToMinutes = (durationStr: string): number => {
       if (!durationStr) return 10;
       const matches = durationStr.match(/(\d+)/g);
       if (!matches) return 10;
       const nums = matches.map(Number);
-      // Take the higher value of a range (or the only value)
       return Math.max(...nums);
     };
 
@@ -175,26 +181,27 @@ ${conclusion}`;
     }
 
     const systemPrompt = `You are the lead YouTube scriptwriter for Eazi Studio.
-Your task is to write a complete, high-retention video script based on a provided outline brief AND the key teachings extracted from the reference source videos.
+Your task is to write a complete, high-retention video script based on the outline brief, reference source teachings, and creator persona.
 
-CRITICAL RULE — SOURCE INTEGRATION:
-The source material key takeaways and teachings listed in the user prompt are REAL content extracted from top-performing YouTube videos on this exact topic.
-You MUST explicitly incorporate the specific points, concepts, actionable advice, and examples from these source teachings into the body of the script — not just as background context but as spoken narration.
-Each body milestone should weave in at least one specific point, example, or actionable insight drawn directly from the source material. Do NOT write generic knowledge — use what the sources actually teach.
-If a source has an analogy or concrete example, adapt it (don't copy it verbatim — create an original delivery of the same concept).
+CREATOR & AVATAR ALIGNMENT:
+- Channel Niche: ${contentNiche}
+- Target Audience Avatar: ${targetAvatar}
+- Tone & Voice Register: ${tone}
 
-CRITICAL RULE — NO SOURCE CITATIONS OR SPEAKER REFERENCES:
-- NEVER mention or write source names, speaker names, channel names, or video numbers in the script (e.g. do NOT say "Video 1 says", "Pastor Y explains", "According to Channel Z", "as Zoutuber A said").
-- Do NOT use any attribution tags.
-- Present all ideas, teachings, stories, and warnings organically as if they are the NARRATOR's own direct words, thoughts, and research lessons. Talk directly to the viewer. Integrate the research concepts seamlessly into the script's flow without referencing that they came from external videos.
+CRITICAL RULE — DUAL-LAYER STORYTELLING:
+Every script must operate on TWO levels:
+1. Surface Topic: The technical concept / tutorial / topic.
+2. Deeper Emotional Struggle: The underlying human mindset or emotional challenge (e.g. fear of perfectionism, patience, fear of poverty, consistency). Connect the technical advice to this deeper emotional transformation.
 
-GLOBAL RETENTION RULES:
-1. No "And Then" Connections: Connect all narrative milestones using "but" (introducing conflict) or "therefore" (showing consequence) to create dynamic pacing.
-2. Staccato Openings: Use short, punchy sentences in the first 30 seconds to increase the density of value per word.
-3. Guide, Not Guru Tone: Relational, authentic tone that shows credibility through vulnerability and avoids a dry academic style.
-4. Mid-video Re-hooks / Attention Resets: At roughly the 50% mark, make sure to insert a rehook phrase that introduces a new roadblock.
-5. No Standard CTAs: Always use Hook-Curiosity-Action (HCA) to point directly to a specific "watch next" video suggestion, strictly avoiding boring "please subscribe" pitches.
-6. Write for the Ear: Keep sentences conversational, easy to read aloud, and direct.
+CRITICAL RULE — SPOKEN SENTENCE RHYTHM & "BUT/THEREFORE" PACING:
+1. No "And Then" Connections: Connect narrative beats using "BUT" (introducing a roadblock/conflict) or "THEREFORE" (showing consequence/result). Never write a linear list of "and then this happens".
+2. Sentence Rhythm Variation: Vary sentence lengths dramatically. Mix short 3-5 word staccato sentences with medium and longer sentences for dynamic spoken cadence.
+3. Gradual Complexity Ramp (0 to 100): Start with clear, accessible context before escalating into advanced concepts.
+4. Interactive Co-Discovery: Pose challenges and hints so the viewer mentally engages ("ask the viewer to figure it out").
+
+CRITICAL RULE — SOURCE INTEGRATION (NO CITATIONS):
+- Explicitly incorporate the specific insights, teachings, and examples from the source material.
+- NEVER mention source video titles, channel names, or speaker names. Present all ideas organically as the narrator's direct voice.
 
 FRAMEWORK SPECIFIC RULES (Key: ${frameworkKey}):
 ${frameworkRulePrompt}
@@ -203,7 +210,8 @@ OUTPUT FORMAT:
 Provide the full script text. Separate major sections using capital headers in brackets: [HOOK], [BRIDGE], [BODY], and [CTA] or [MILESTONES]. Do NOT output any markdown comments, formatting notes, or metadata. Output ONLY the spoken narration text.`;
 
     const userPrompt = `Project Title: ${project.title}
-Niche: ${project.niche || 'General'}
+Niche: ${contentNiche}
+Target Audience Avatar: ${targetAvatar}
 Tone Override: ${tone}
 Target Length: ${targetLength} minutes (IMPORTANT: write enough content to fill ${targetLength} full minutes of spoken narration — approximately ${Math.round(targetLength * 150)} words minimum)
 
@@ -214,7 +222,7 @@ CTA PLAN:
 Primary Ask: ${briefData.ctaPlan?.primaryAsk || 'watch_next'}
 Script Line Reference: ${briefData.ctaPlan?.scriptLine || 'Watch the next video.'}
 
-FINAL INSTRUCTION: Write the complete spoken script now. Every body milestone MUST explicitly draw from the SOURCE MATERIAL KEY TAKEAWAYS listed above. However, you must NEVER reference the source titles, speaker names, channel names, or video numbers (do not say "Video 1", "Pastor X", "according to Y"). Present all teachings organically as your own direct voiceover narration.`;
+FINAL INSTRUCTION: Write the complete spoken script now using the "But/Therefore" transition logic, spoken sentence rhythm, 0-to-100 complexity ramping, and dual-layer emotional storytelling.`;
 
     const GITHUB_TOKEN = getGitHubToken();
     if (!GITHUB_TOKEN) {

@@ -78,11 +78,16 @@ export async function GET(request: Request) {
   }
 
   try {
+    // Restrict search results to recent viral hits from the past 6 months max (180 days)
+    const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString();
+
     // 1. Search for videos
     const searchRes = await fetch(
       `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
         query
-      )}&type=video&maxResults=6&order=viewCount&key=${API_KEY}`,
+      )}&type=video&maxResults=6&order=viewCount&publishedAfter=${encodeURIComponent(
+        sixMonthsAgo
+      )}&key=${API_KEY}`,
       { cache: 'no-store' }
     );
 

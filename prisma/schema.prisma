@@ -7,12 +7,30 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  image     String?
-  projects  Project[]
-  createdAt DateTime  @default(now())
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String?
+  image          String?
+  channelProfile ChannelProfile?
+  projects       Project[]
+  createdAt      DateTime        @default(now())
+}
+
+model ChannelProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  youtubeHandle         String?
+  channelTitle          String?
+  channelDescription    String?
+  channelAvatar         String?
+  niche                 String?
+  audienceAvatar        String?
+  toneOfVoice           String?
+  topCompetitorChannels String[] @default([])
+  contentLanguage       String?  @default("English")
+  updatedAt             DateTime @updatedAt
+  createdAt             DateTime @default(now())
 }
 
 model NichePreset {
