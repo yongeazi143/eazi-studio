@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getGitHubToken } from "@/utils/ai";
+import { db } from "@/utils/db";
+import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
 
 function chunkTranscript(text: string, maxWordsPerChunk = 3000): string[] {
@@ -241,8 +243,13 @@ async function runStageB(
     framework: string;
     deconstructions: any[];
     githubToken: string;
+    topCompetitorChannels?: string;
   }
 ) {
+  const competitorContext = opts.topCompetitorChannels
+    ? `7. TOP CREATOR GAP EXPLOITATION: Benchmark against the title CTRs and hook patterns of top niche creators (${opts.topCompetitorChannels}). Produce titles and outline beats that explicitly fill their content gaps (higher emotional resonance, punchier curiosity gaps, and faster pacing).`
+    : "";
+
   const systemPrompt = `You are the lead scriptwriter for Eazi Studio, a faceless YouTube animation brand.
 You will receive STRUCTURAL ANALYSES AND CONTENT SUMMARIES of 1-5 top-performing videos on the same topic.
 Your job is to identify the highest-converting patterns across them and design a NEW, original outline brief — never a paraphrase or recombination of any single source's wording.
@@ -254,11 +261,6 @@ Hard rules:
 4. Every beat needs a "visualCue" — a one-line description of the B-roll/scene matching the selected style: "${opts.styleDescription}". Do NOT output stickman descriptions unless the selected style is "doodle". Keep visual descriptions tailored strictly to this aesthetic.
 5. You MUST weave the key teachings (topics, descriptions, and actionable advice) extracted from the source material into the outline milestones so that they are explicitly covered in our outline!
 6. Respond with ONLY valid JSON matching the schema below. No prose, no markdown fences.
-
-Output schema:
-{
-  "titleCandidates": [
-    { "title": "CTR 98% Title Candidate", "score": 98 },
     { "title": "CTR 92% Title Candidate", "score": 92 },
     { "title": "CTR 85% Title Candidate", "score": 85 },
     { "title": "CTR 81% Title Candidate", "score": 81 },
@@ -302,7 +304,7 @@ We support 10 distinct script frameworks. You must generate the outline beats ma
 
 1. "stoic_explainer" (Educational / Stoic Explainer):
    - hook: Promise-Solution-Proof.
-   - bridge: "Guide, Not Guru" concept intro.
+   - bridge: Personal perspective & core concept intro.
    - milestone (beatType: "concept_what"): Define the concept with 1 analogy (3-step analogy technique).
    - milestone (beatType: "concept_why"): Why the mind resists it (tension).
    - milestone (beatType: "concept_how"): Concrete 1-2 step practice.
@@ -540,6 +542,19 @@ export async function POST(request: Request) {
       }
     }
 
+    // Fetch user channel profile for top competitor benchmark channels
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    let topCompetitorChannels = "";
+    if (user) {
+      const userProfile = await db.channelProfile.findUnique({ where: { userId: user.id } }).catch(() => null);
+      if (userProfile?.topCompetitorChannels) {
+        topCompetitorChannels = Array.isArray(userProfile.topCompetitorChannels)
+          ? userProfile.topCompetitorChannels.join(', ')
+          : userProfile.topCompetitorChannels;
+      }
+    }
+
     // Stage B: Synthesize deconstructions into outline brief
     const synthesizedBrief = await runStageB({
       topic: topic || "Synthesized concept based on references",
@@ -550,6 +565,7 @@ export async function POST(request: Request) {
       framework,
       deconstructions,
       githubToken: GITHUB_TOKEN,
+      topCompetitorChannels,
     });
 
     // Populate source summaries directly from Stage A outputs

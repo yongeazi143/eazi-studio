@@ -194,7 +194,7 @@ Recent Video Titles: ${fetchedInfo.recentVideoTitles.length > 0 ? fetchedInfo.re
 Provide a JSON output with the following keys:
 - niche: precise channel category (e.g. "Tech & AI Explainers", "Stoic Self-Improvement", "Personal Finance", "Gaming Commentary")
 - audienceAvatar: specific target viewer persona (e.g. "Beginner creators wanting to hit 1k subs", "Curious adults interested in historical deep dives")
-- toneOfVoice: tone register (e.g. "Warm, direct, conversational (Guide, Not Guru)", "High-energy, punchy, analytical")
+- toneOfVoice: tone register (e.g. "Warm, direct, relatable, conversational", "High-energy, punchy, analytical")
 - topCompetitorChannels: array of 3 real, popular channel names in this exact niche
 
 Return ONLY raw JSON.`;

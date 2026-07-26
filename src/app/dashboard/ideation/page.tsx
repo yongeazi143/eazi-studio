@@ -162,9 +162,11 @@ function IdeationPageContent() {
                 const mappedVideos = briefObj.sourceSummaries.map((s: any, idx: number) => ({
                   id: s.url ? extractVideoId(s.url) || `vid-${idx}` : `vid-${idx}`,
                   title: s.title || `Reference Video ${idx + 1}`,
+                  url: s.url || "",
                   // Restore thumbnail: saved in sourceSummary or reconstruct from video id
                   thumbnail: s.thumbnail || (s.url ? `https://img.youtube.com/vi/${extractVideoId(s.url)}/mqdefault.jpg` : ""),
-                  channelTitle: s.channel || ""
+                  channelTitle: s.channel || "",
+                  transcript: s.transcript || (s.summary ? `Summary: ${s.summary}` : "")
                 }));
                 setSelectedVideos(mappedVideos);
               } else if (briefObj.coreThesis) {
@@ -625,7 +627,8 @@ function IdeationPageContent() {
         const data = await res.json();
         dataResult = data.result;
       } else if (activeTab === 'remix') {
-        const videosToFetch = selectedVideos.filter(v => !v.manualTranscript);
+        // Only hit YouTube API for videos that don't have a manual or cached transcript already
+        const videosToFetch = selectedVideos.filter(v => !v.manualTranscript && !v.transcript);
         let fetchResults: any[] = [];
 
         if (videosToFetch.length > 0) {
@@ -638,34 +641,40 @@ function IdeationPageContent() {
           });
           const data = await res.json();
           fetchResults = data.results || [];
+
+          // Save newly fetched transcripts into selectedVideos state & localStorage
+          const updatedSelectedVideos = selectedVideos.map(v => {
+            const match = fetchResults.find((item: any) => item.url === v.url);
+            if (match && match.status === 'success' && match.text) {
+              return { ...v, transcript: match.text, hasError: false, fetchError: null };
+            }
+            return v;
+          });
+          setSelectedVideos(updatedSelectedVideos);
+          localStorage.setItem('eazi_selected_videos', JSON.stringify(updatedSelectedVideos));
         }
 
         const sources = selectedVideos.map(video => {
-          if (video.manualTranscript) {
-            return {
-              title: video.title,
-              url: video.url,
-              transcript: video.manualTranscript
-            };
-          }
-          const transcriptItem = fetchResults.find((item: any) => item.url === video.url);
+          const text = video.manualTranscript || video.transcript || "";
+          const match = fetchResults.find((item: any) => item.url === video.url);
           return {
             title: video.title,
             url: video.url,
-            transcript: transcriptItem?.status === 'success' ? transcriptItem.text : ""
+            transcript: text || (match?.status === 'success' ? match.text : "")
           };
         }).filter(item => !!item.transcript);
 
         const failedVideos = selectedVideos.filter(video => {
-          if (video.manualTranscript) return false;
+          if (video.manualTranscript || video.transcript) return false;
           const match = fetchResults.find((item: any) => item.url === video.url);
           return !match || match.status !== 'success';
         });
 
         if (failedVideos.length > 0) {
           const updatedVideos = selectedVideos.map(v => {
+            if (v.manualTranscript || v.transcript) return v;
             const match = fetchResults.find((item: any) => item.url === v.url);
-            if (!v.manualTranscript && (!match || match.status !== 'success')) {
+            if (!match || match.status !== 'success') {
               return { ...v, hasError: true, fetchError: match?.error || "YouTube transcription extraction was blocked by anti-bot checks." };
             }
             return v;

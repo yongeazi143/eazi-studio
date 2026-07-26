@@ -151,6 +151,11 @@ export async function POST(request: NextRequest) {
     const outlineText = briefData.outline?.map((beat: any, idx: number) => {
       return `Section ${idx + 1}: ${beat.title} (${beat.summary})`;
     }).join('\n') || '';
+    const targetThumbnailConcept = briefData.targetThumbnailConcept || "";
+    const targetThumbnailConceptPrompt = targetThumbnailConcept
+      ? `A target thumbnail concept has been pre-planned for this video: "${targetThumbnailConcept}".
+You MUST use this visual description and text overlay as the anchor for "concept_1". Design the visuals, textOverlay, and compiledPrompt for "concept_1" to align exactly with that visual promise to maintain narrative and visual consistency. For "concept_2" and "concept_3", you may generate alternative creative variations.`
+      : `Look at the beginning of the video script (inside the [HOOK] section) for a comment starting with "// Target Thumbnail Concept:". If present, you MUST use this visual note description and text overlay as the anchor for "concept_1". Design the visuals, textOverlay, and compiledPrompt for "concept_1" to align exactly with that visual note to maintain narrative and visual consistency. For "concept_2" and "concept_3", you may generate alternative creative variations.`;
 
     const systemPrompt = `You are the Lead Creative Strategist for Eazi Studio, an automated YouTube video production platform. You have two combined areas of expertise: (1) a viral YouTube growth strategist who has studied thousands of top-performing thumbnails and titles across niches, and (2) a visual prompt engineer who writes precise, render-ready image prompts for AI generation tools (specifically Google Flow).
 
@@ -163,6 +168,10 @@ INPUT STYLE CONSTRAINTS:
 - extraModifiers: "${extraModifiersStr}"
 
 You must treat characterModifier, backgroundModifier, and extraModifiers as non-negotiable style constraints. Every thumbnail concept's visuals and compiledPrompt MUST incorporate them faithfully. Never override or drop them.
+
+====================================================================
+CRITICAL RULE — THUMBNAIL VISUAL ANCHOR:
+${targetThumbnailConceptPrompt}
 
 ====================================================================
 OUTPUT JSON SCHEMA:

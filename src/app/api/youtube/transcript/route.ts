@@ -7,9 +7,7 @@ function extractVideoId(url: string): string | null {
 }
 
 /**
- * PRIMARY METHOD: youtube-transcript.ai
- * A free public REST API that handles YouTube's bot detection on their end.
- * No API key, no signup, no library needed.
+ * METHOD 1: youtube-transcript.ai service
  */
 async function fetchViaTranscriptService(videoId: string): Promise<string> {
   const res = await fetch(
@@ -17,10 +15,9 @@ async function fetchViaTranscriptService(videoId: string): Promise<string> {
     {
       headers: {
         Accept: 'text/plain,text/html,*/*',
-        'User-Agent': 'EaziStudio/1.0 (content-creator-tool)',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       },
-      // 15 second timeout via AbortSignal
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(12000),
     }
   );
 
@@ -29,7 +26,6 @@ async function fetchViaTranscriptService(videoId: string): Promise<string> {
   }
 
   const text = await res.text();
-
   if (!text || text.trim().length < 30) {
     throw new Error('Transcript service returned an empty response.');
   }
@@ -38,14 +34,12 @@ async function fetchViaTranscriptService(videoId: string): Promise<string> {
 }
 
 /**
- * FALLBACK METHOD: Direct YouTube timedtext extraction
- * Fetches the YouTube watch page, extracts caption track URLs, and fetches the XML.
- * Works when the primary service is unavailable.
+ * METHOD 2: Direct YouTube watch page timedtext parsing (with escaped JSON support)
  */
 async function fetchViaDirectTimedtext(videoId: string): Promise<string> {
   const BROWSER_HEADERS = {
     'User-Agent':
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
     Accept:
       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.9',
@@ -55,12 +49,11 @@ async function fetchViaDirectTimedtext(videoId: string): Promise<string> {
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'none',
-    'Cache-Control': 'max-age=0',
   };
 
   const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
     headers: BROWSER_HEADERS,
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(12000),
   });
 
   if (!pageRes.ok) {
@@ -69,18 +62,32 @@ async function fetchViaDirectTimedtext(videoId: string): Promise<string> {
 
   const html = await pageRes.text();
 
-  // Extract captionTracks array from ytInitialPlayerResponse
-  const captionMatch = html.match(/"captionTracks":(\[.*?\])/);
-  if (!captionMatch) {
-    throw new Error('No caption tracks found — video may have no captions or YouTube blocked the request.');
+  // Try raw captionTracks pattern first, then escaped string pattern
+  let captionTracks: Array<{ languageCode: string; baseUrl: string }> | null = null;
+  const rawMatch = html.match(/"captionTracks":\s*(\[.*?\])/);
+  
+  if (rawMatch) {
+    try {
+      captionTracks = JSON.parse(rawMatch[1]);
+    } catch (e) {
+      // Continue to fallback
+    }
   }
 
-  const captionTracks: Array<{ languageCode: string; baseUrl: string }> = JSON.parse(
-    captionMatch[1]
-  );
+  if (!captionTracks) {
+    const escapedMatch = html.match(/\\?"captionTracks\\?":\s*(\\?\[.*?\\?\])/);
+    if (escapedMatch) {
+      try {
+        const unescaped = escapedMatch[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        captionTracks = JSON.parse(unescaped);
+      } catch (e) {
+        // Continue
+      }
+    }
+  }
 
-  if (!captionTracks.length) {
-    throw new Error('Caption track list is empty.');
+  if (!captionTracks || !captionTracks.length) {
+    throw new Error('No caption tracks found in player HTML.');
   }
 
   // Prefer English, fall back to first available
@@ -104,7 +111,6 @@ async function fetchViaDirectTimedtext(videoId: string): Promise<string> {
 
   const xml = await xmlRes.text();
 
-  // Parse <text> tags from XML and decode HTML entities
   const textRegex = /<text[^>]*>([^<]*)<\/text>/g;
   const segments: string[] = [];
   let m: RegExpExecArray | null;
@@ -127,6 +133,54 @@ async function fetchViaDirectTimedtext(videoId: string): Promise<string> {
   }
 
   return segments.join(' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * METHOD 3: Public LemnosLife YouTube API Proxy
+ */
+async function fetchViaLemnosProxy(videoId: string): Promise<string> {
+  const res = await fetch(`https://yt.lemnoslife.com/noKey/transcript?videoId=${videoId}`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Lemnos Proxy returned HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  if (data?.transcript && Array.isArray(data.transcript) && data.transcript.length > 0) {
+    const lines = data.transcript.map((item: any) => item.text || item.lines?.join(' ') || '').filter(Boolean);
+    if (lines.length > 0) {
+      return lines.join(' ').replace(/\s+/g, ' ').trim();
+    }
+  }
+
+  throw new Error('Lemnos Proxy returned empty transcript array.');
+}
+
+/**
+ * METHOD 4: DecAPI / Vercel public transcript proxy
+ */
+async function fetchViaVercelProxy(videoId: string): Promise<string> {
+  const res = await fetch(`https://subtitles-youtube.vercel.app/api/transcript?videoId=${videoId}`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Vercel Proxy returned HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  if (Array.isArray(data) && data.length > 0) {
+    const lines = data.map((item: any) => item.text || '').filter(Boolean);
+    if (lines.length > 0) {
+      return lines.join(' ').replace(/\s+/g, ' ').trim();
+    }
+  }
+
+  throw new Error('Vercel proxy returned invalid payload');
 }
 
 export async function POST(request: Request) {
@@ -155,30 +209,52 @@ export async function POST(request: Request) {
       let text: string | null = null;
       let lastError = '';
 
-      // Method 1: youtube-transcript.ai service (primary)
+      // Tier 1: Service API
       try {
         text = await fetchViaTranscriptService(videoId);
-        console.log(`[transcript] ✅ Service method succeeded for ${videoId}`);
+        console.log(`[transcript] ✅ Tier 1 service method succeeded for ${videoId}`);
       } catch (err: any) {
         lastError = err.message;
-        console.warn(`[transcript] ⚠️ Service method failed for ${videoId}: ${lastError}`);
+        console.warn(`[transcript] ⚠️ Tier 1 service method failed for ${videoId}: ${lastError}`);
       }
 
-      // Method 2: Direct timedtext extraction (fallback)
+      // Tier 2: Direct YouTube timedtext extraction
       if (!text) {
         try {
           text = await fetchViaDirectTimedtext(videoId);
-          console.log(`[transcript] ✅ Direct method succeeded for ${videoId}`);
+          console.log(`[transcript] ✅ Tier 2 direct method succeeded for ${videoId}`);
         } catch (err: any) {
           lastError = err.message;
-          console.warn(`[transcript] ⚠️ Direct method failed for ${videoId}: ${lastError}`);
+          console.warn(`[transcript] ⚠️ Tier 2 direct method failed for ${videoId}: ${lastError}`);
+        }
+      }
+
+      // Tier 3: Lemnos Proxy API
+      if (!text) {
+        try {
+          text = await fetchViaLemnosProxy(videoId);
+          console.log(`[transcript] ✅ Tier 3 Lemnos proxy succeeded for ${videoId}`);
+        } catch (err: any) {
+          lastError = err.message;
+          console.warn(`[transcript] ⚠️ Tier 3 Lemnos proxy failed for ${videoId}: ${lastError}`);
+        }
+      }
+
+      // Tier 4: Vercel Proxy API
+      if (!text) {
+        try {
+          text = await fetchViaVercelProxy(videoId);
+          console.log(`[transcript] ✅ Tier 4 Vercel proxy succeeded for ${videoId}`);
+        } catch (err: any) {
+          lastError = err.message;
+          console.warn(`[transcript] ⚠️ Tier 4 Vercel proxy failed for ${videoId}: ${lastError}`);
         }
       }
 
       if (text) {
         results.push({ url: cleanUrl, status: 'success', text });
       } else {
-        console.error(`[transcript] ❌ All methods failed for ${videoId}. Last error: ${lastError}`);
+        console.error(`[transcript] ❌ All 4 extraction tiers failed for ${videoId}. Last error: ${lastError}`);
         results.push({
           url: cleanUrl,
           status: 'error',

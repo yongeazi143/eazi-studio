@@ -417,7 +417,7 @@ export default function ChannelProfilePage() {
               type="text"
               value={toneOfVoice}
               onChange={(e) => setToneOfVoice(e.target.value)}
-              placeholder="e.g. Warm, direct, conversational (Guide, Not Guru)"
+              placeholder="e.g. Warm, direct, relatable, conversational"
               className="w-full bg-black/5 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 dark:text-gray-200 outline-none focus:border-[#E00C1D]/50 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
             />
           </div>

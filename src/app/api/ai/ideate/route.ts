@@ -156,7 +156,7 @@ We support 10 distinct script frameworks. You must generate the outline beats ma
 
 1. "stoic_explainer" (Educational / Stoic Explainer):
    - hook: Promise-Solution-Proof.
-   - bridge: "Guide, Not Guru" concept intro.
+   - bridge: Personal perspective & core concept intro.
    - milestone (beatType: "concept_what"): Define the concept with 1 analogy (3-step analogy technique).
    - milestone (beatType: "concept_why"): Why the mind resists it (tension).
    - milestone (beatType: "concept_how"): Concrete 1-2 step practice.
