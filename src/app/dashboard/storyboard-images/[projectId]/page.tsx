@@ -55,14 +55,20 @@ export default function StoryboardGridPage({ params }: StoryboardGridPageProps) 
           setProjectStatus(data.project.status);
           if (data.project.scenes && data.project.scenes.length > 0) {
             const sorted = [...data.project.scenes].sort((a: any, b: any) => a.index - b.index);
-            setScenes(sorted.map((s: any) => ({
-              id: s.id,
-              text: s.narration,
-              prompt: s.imagePrompt,
-              imageUrl: s.imageUrl,
-              startTime: s.startTime,
-              endTime: s.endTime
-            })));
+            setScenes(sorted.map((s: any) => {
+              let url = s.imageUrl || null;
+              if (url && url.startsWith("data:") && url.includes("?t=")) {
+                url = url.split("?t=")[0];
+              }
+              return {
+                id: s.id,
+                text: s.narration,
+                prompt: s.imagePrompt,
+                imageUrl: url,
+                startTime: s.startTime,
+                endTime: s.endTime
+              };
+            }));
           }
         }
       }
@@ -108,8 +114,9 @@ export default function StoryboardGridPage({ params }: StoryboardGridPageProps) 
       if (uploadRes.ok) {
         const uploadData = await uploadRes.json();
         
-        // Update local scenes array with new imageUrl and append a cache-busting timestamp
-        const cacheBustedUrl = `${uploadData.imageUrl}?t=${Date.now()}`;
+        // Update local scenes array with new imageUrl and append a cache-busting timestamp (only for HTTP/file paths, not data URIs)
+        const rawUrl = uploadData.imageUrl || "";
+        const cacheBustedUrl = rawUrl.startsWith("data:") ? rawUrl : `${rawUrl}?t=${Date.now()}`;
         setScenes(prev => prev.map(s => s.id === id ? { ...s, imageUrl: cacheBustedUrl } : s));
         setSceneStatuses(prev => ({ ...prev, [id]: "done" }));
         

@@ -226,7 +226,8 @@ export default function ThumbnailPage({ params }: ThumbnailPageProps) {
         const data = await res.json();
         const enrichedConcepts = (data.thumbnailConcepts || []).map((c: any) => {
           if (c.imageUrl && c.id === conceptId) {
-            return { ...c, imageUrl: `${c.imageUrl}?t=${Date.now()}` };
+            const url = c.imageUrl || "";
+            return { ...c, imageUrl: url.startsWith("data:") ? url : `${url}?t=${Date.now()}` };
           }
           return c;
         });
@@ -255,7 +256,8 @@ export default function ThumbnailPage({ params }: ThumbnailPageProps) {
         // Map unique timestamp to urls to bust cache
         const enrichedConcepts = (data.thumbnailConcepts || []).map((c: any) => {
           if (c.imageUrl && c.id === selectedConceptId) {
-            return { ...c, imageUrl: `${c.imageUrl}?t=${Date.now()}` };
+            const url = c.imageUrl || "";
+            return { ...c, imageUrl: url.startsWith("data:") ? url : `${url}?t=${Date.now()}` };
           }
           return c;
         });
