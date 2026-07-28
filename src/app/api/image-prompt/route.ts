@@ -190,14 +190,47 @@ OUTPUT FORMAT (JSON only, no markdown):
 
     const promptList: any[] = parsed.prompts || [];
 
-    // ── Generic background map (fallback when no preset) ─────────────────────
-    const bgMap: Record<string, string> = {
-      yellow: "clean flat light warm-yellow background",
-      black:  "clean flat deep charcoal-black background",
-      white:  "clean flat soft white background with a gentle warm glow",
-      red:    "clean flat deep crimson-red background",
-      navy:   "clean flat dark navy-blue background",
-      orange: "clean flat warm amber-orange background",
+    // ── Dynamic background resolver (Eazi Transcribe style) ─────────────────────
+    const resolveBackgroundDescription = (bgString: string, presetModifier?: string | null): string => {
+      const bgLower = (bgString || "").toLowerCase();
+      const presetLower = (presetModifier || "").toLowerCase();
+      const baseVignette = "with a subtle vignette and gentle studio lighting";
+      const isPaper = presetLower.includes("paper");
+
+      if (bgLower.includes("black") || bgLower.includes("dark")) {
+        return isPaper
+          ? "soft very light charcoal-gray paper textured background, close to off-white, " + baseVignette
+          : "clean flat deep charcoal-black background";
+      }
+      if (bgLower.includes("white")) {
+        return isPaper
+          ? "soft very light warm cream paper textured background, almost white, with a gentle central golden glow, " + baseVignette
+          : "clean flat soft white background with a gentle warm glow";
+      }
+      if (bgLower.includes("red")) {
+        return isPaper
+          ? "soft very light pastel rose-red paper textured background, almost white, " + baseVignette
+          : "clean flat deep crimson-red background";
+      }
+      if (bgLower.includes("blue") || bgLower.includes("navy")) {
+        return isPaper
+          ? "soft very light pastel slate-blue paper textured background, close to off-white, " + baseVignette
+          : "clean flat dark navy-blue background";
+      }
+      if (bgLower.includes("orange")) {
+        return isPaper
+          ? "soft very light pastel peach-orange paper textured background, almost white, " + baseVignette
+          : "clean flat warm amber-orange background";
+      }
+
+      // Default / Yellow
+      if (presetModifier && !presetLower.includes("dynamic") && !presetLower.includes("matching scene tone")) {
+        return presetModifier;
+      }
+
+      return isPaper
+        ? "soft very light warm yellow-cream paper textured background, almost white, " + baseVignette
+        : "clean flat light warm-yellow background";
     };
 
     // ── Assemble final prompts ────────────────────────────────────────────────
@@ -220,8 +253,8 @@ OUTPUT FORMAT (JSON only, no markdown):
         .replace(/^[:\-\s*\u2022\u2013\u2014]+/, "")
         .trim();
 
-      // Resolve background string — preset wins over generic map
-      const bgDesc: string = preset?.backgroundModifier ?? bgMap[bgKey] ?? bgMap.yellow;
+      // Resolve background string — dynamic per scene line (Eazi Transcribe style)
+      const bgDesc: string = resolveBackgroundDescription(bgKey, preset?.backgroundModifier);
 
       // Resolve character clause — preset wins over per-style default
       const characterClause: string = preset?.characterModifier
