@@ -94,7 +94,7 @@ export default function DashboardProjectList() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/projects/${deleteTarget}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects?id=${deleteTarget}`, { method: "DELETE" });
       if (res.ok) {
         setProjects((prev) => prev.filter((p) => p.id !== deleteTarget));
         showToast("Project deleted successfully.", "success");
