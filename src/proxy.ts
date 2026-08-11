@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
@@ -39,22 +39,28 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data } = await supabase.auth.getUser()
-  const user = data.user
+  try {
+    const { data } = await supabase.auth.getUser()
+    const user = data?.user
 
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/dashboard')
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
+    if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
 
-  if (user && request.nextUrl.pathname === '/login') {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    if (user && request.nextUrl.pathname === '/login') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  } catch (error) {
+    console.error('Proxy auth check error:', error)
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
@@ -62,6 +68,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/dashboard/:path*',
+    '/login',
+    '/auth/:path*',
   ],
 }
